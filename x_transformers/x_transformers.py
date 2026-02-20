@@ -1514,7 +1514,6 @@ class Attention(Module):
             enable_math = True,
             enable_mem_efficient = True
         ),
-        flash_pack_seq = False,
     ):
         super().__init__()
         dim_kv = default(dim_context, dim)
@@ -1697,7 +1696,6 @@ class Attention(Module):
             cope = cope,
             onnxable = onnxable,
             sdp_kwargs = attend_sdp_kwargs,
-            flash_pack_seq=flash_pack_seq,
         )
 
         # head scaling
@@ -2310,7 +2308,6 @@ class AttentionLayers(Module):
 
         dim_head = attn_kwargs.get('dim_head', DEFAULT_DIM_HEAD)
         data_dependent_alibi = attn_kwargs.get('data_dependent_alibi', False)
-        flash_pack_seq = attn_kwargs.get('flash_pack_seq', False)
         assert len(kwargs) == 0, f'unrecognized kwargs passed in {kwargs.keys()}'
 
         self.dim = dim
@@ -2357,7 +2354,6 @@ class AttentionLayers(Module):
 
         assert at_most_one_of(rotary_pos_emb, polar_pos_emb), f'either rotary positional embedding or polar positional embedding can be turned on'
         assert not (rotary_xpos and not causal), 'rotary xpos is not compatible with bidirectional attention'
-        assert not flash_pack_seq or rotary_pos_emb, 'block masking only tested for rotary positional embeddings'
         self.rotary_pos_emb = RotaryEmbedding(rotary_emb_dim, use_xpos = rotary_xpos, scale_base = rotary_xpos_scale_base, interpolation_factor = rotary_interpolation_factor, base_rescale_factor = rotary_base_rescale_factor) if rotary_pos_emb else None
 
         # polar positional embedding (PoPE) - https://arxiv.org/abs/2509.10534

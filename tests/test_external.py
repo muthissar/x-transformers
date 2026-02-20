@@ -72,7 +72,7 @@ def test_flash_pack_seq(exp):
 
             # Standard padding            
             reset_exp_det()
-            atd = Attend(flash = False, flash_pack_seq = False,causal=causal).cuda().eval()
+            atd = Attend(flash = False, causal=causal).cuda().eval()
             o_atd = atd(q=padded_batch[:,None], k=padded_mem[:,None], v=padded_mem[:,None], mask=attn_mask)
             o_atd = o_atd[0][:,0]
             o_atd = torch.cat([o[~(m == pad_val).all(-1)] for o, m in zip(o_atd, padded_batch)], dim=0)
@@ -85,7 +85,7 @@ def test_flash_pack_seq(exp):
             )
             o_att = torch.cat([o[~(m == pad_val).all(-1)] for o, m in zip(o_att, padded_batch)], dim=0)
             
-            atl = AttentionLayers(dim=dim, depth=n_layers, cross_attend=True, causal=causal, attn_flash=True, attn_flash_pack_seq=False, **atl_kwargs).cuda().eval()
+            atl = AttentionLayers(dim=dim, depth=n_layers, cross_attend=True, causal=causal, attn_flash=True, **atl_kwargs).cuda().eval()
             o_atl = atl(
                 x=padded_batch,
                 context=padded_mem,
@@ -97,7 +97,7 @@ def test_flash_pack_seq(exp):
 
             # Block masking
             reset_exp_det()
-            atd_block = Attend(flash = True, flash_pack_seq = True, causal=causal).cuda().eval()        
+            atd_block = Attend(flash = True, causal=causal).cuda().eval()        
 
             flash_pack_seq_kwargs = dict(
                 cu_seqlens_q=attn_cu_lengths,
@@ -115,14 +115,14 @@ def test_flash_pack_seq(exp):
             o_atd_block = o_atd_block[0][0,0]
             
 
-            att_block=Attention(dim=dim,flash=True,flash_pack_seq=True, causal=causal).cuda().eval()
+            att_block=Attention(dim=dim,flash=True, causal=causal).cuda().eval()
             o_att_block = att_block(
                 x = x.unsqueeze(0),
                 context = mem.unsqueeze(0),
                 flash_pack_seq_kwargs=flash_pack_seq_kwargs_context
             )[0]
             
-            atl_block = AttentionLayers(dim=dim, depth=n_layers, cross_attend=True, causal=causal, attn_flash=True, attn_flash_pack_seq=True, **atl_kwargs).cuda().eval()
+            atl_block = AttentionLayers(dim=dim, depth=n_layers, cross_attend=True, causal=causal, attn_flash=True, **atl_kwargs).cuda().eval()
             o_atl_block = atl_block(
                 x = x.unsqueeze(0),
                 context = mem.unsqueeze(0),
