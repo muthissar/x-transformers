@@ -1344,11 +1344,12 @@ class GLU(Module):
         dim_in,
         dim_out,
         activation: Callable,
-        mult_bias = False
+        mult_bias = False,
+        bias = True
     ):
         super().__init__()
         self.act = activation
-        self.proj = nn.Linear(dim_in, dim_out * 2)
+        self.proj = nn.Linear(dim_in, dim_out * 2, bias=bias)
         self.mult_bias = nn.Parameter(torch.ones(dim_out)) if mult_bias else 1.
 
     def forward(self, x):
@@ -1391,7 +1392,7 @@ class FeedForward(Module):
             activation = nn.GELU()
 
         if glu:
-            proj_in = GLU(dim, inner_dim, activation, mult_bias = glu_mult_bias)
+            proj_in = GLU(dim, inner_dim, activation, mult_bias = glu_mult_bias, bias = not no_bias)
         else:
             proj_in = nn.Sequential(
                 nn.Linear(dim, inner_dim, bias = not no_bias),

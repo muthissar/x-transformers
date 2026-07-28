@@ -435,7 +435,7 @@ class Attend(Module):
             cu_seqlens_q = flash_pack_seq_kwargs.get('cu_seqlens_q', None)
             assert q.shape[0] == 1 and k.shape[0] == 1 and v.shape[0] == 1, f"batch size must be 1 for block masking. Shape was q={q.shape}, k={k.shape}, v={v.shape}"
             assert not exists(mask) and exists(cu_seqlens_q) and exists(cu_seqlens_k), "mask cannot be passed with cu_seqlens for block masking"
-            assert cu_seqlens_q.shape == cu_seqlens_k.shape and cu_seqlens_q.ndim == 1 and not cu_seqlens_q.is_floating_point() and not cu_seqlens_k.is_floating_point() and (cu_seqlens_q.diff() > 0).all() and (cu_seqlens_k.diff() > 0).all(), "cu_seqlens_q/k should be same-length 1D cumulative sequence lengths for block masking"
+            assert cu_seqlens_q.shape == cu_seqlens_k.shape and cu_seqlens_q.ndim == 1 and not cu_seqlens_q.is_floating_point() and not cu_seqlens_k.is_floating_point() and (cu_seqlens_q.diff() >= 0).all() and (cu_seqlens_k.diff() >= 0).all(), "cu_seqlens_q/k should be same-length 1D cumulative sequence lengths for block masking"
             assert not causal or (cu_seqlens_q == cu_seqlens_k).all(), "causal attention with different cu_seqlens for q and k not supported"
             # efficient packed sequences flash attentino masking
             att = self.flash_attn_varlen_func(
